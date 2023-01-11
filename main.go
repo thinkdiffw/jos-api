@@ -51,11 +51,7 @@ func doRequest(url string) (map[string]interface{}, error) {
 }
 
 func getApiList(groupId int) {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println("Recovered in getApiList", r)
-		}
-	}()
+	defer catch("getApiList")
 	result, err := doRequest("https://joshome.jd.com/api/list?id=" + strconv.Itoa(groupId))
 	if err != nil {
 		return
@@ -80,11 +76,7 @@ func getApiList(groupId int) {
 }
 
 func getApiDetail(id int, name string) {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println("Recovered in getApiList", r)
-		}
-	}()
+	defer catch("getApiDetail")
 	result, err := doRequest("https://joshome.jd.com/api/detail?id=" + strconv.Itoa(id) + "&apiName=" + name)
 	if err != nil {
 		return
@@ -110,5 +102,11 @@ func printElements(level int, elements interface{}) {
 		log.Printf("%sname: %s, type: %s, value: %s, desc: %s\n", strings.Repeat("- ", level), elemMap["paramName"], elemMap["type"], elemMap["value"], elemMap["desc"])
 		newLevel := level + 1
 		printElements(newLevel, elemMap["elements"])
+	}
+}
+
+func catch(method string) {
+	if r := recover(); r != nil {
+		log.Printf("Recovered in %s, %+v\n", method, r)
 	}
 }
