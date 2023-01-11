@@ -19,18 +19,7 @@ func main() {
 	defer logFile.Close()
 	mw := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(mw)
-
-	navResp, err := http.Get("https://joshome.jd.com/api/index")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer navResp.Body.Close()
-	body, err := io.ReadAll(navResp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	result := map[string]interface{}{}
-	err = json.Unmarshal(body, &result)
+	result, err := doRequest("https://joshome.jd.com/api/index")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -43,23 +32,31 @@ func main() {
 	}
 }
 
+func doRequest(url string) (map[string]interface{}, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	result := map[string]interface{}{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func getApiList(groupId int) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("Recovered in getApiList", r)
 		}
 	}()
-	resp, err := http.Get("https://joshome.jd.com/api/list?id=" + strconv.Itoa(groupId))
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-	result := map[string]interface{}{}
-	err = json.Unmarshal(body, &result)
+	result, err := doRequest("https://joshome.jd.com/api/list?id=" + strconv.Itoa(groupId))
 	if err != nil {
 		return
 	}
@@ -88,17 +85,7 @@ func getApiDetail(id int, name string) {
 			log.Println("Recovered in getApiList", r)
 		}
 	}()
-	resp, err := http.Get("https://joshome.jd.com/api/detail?id=" + strconv.Itoa(id) + "&apiName=" + name)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-	result := map[string]interface{}{}
-	err = json.Unmarshal(body, &result)
+	result, err := doRequest("https://joshome.jd.com/api/detail?id=" + strconv.Itoa(id) + "&apiName=" + name)
 	if err != nil {
 		return
 	}
